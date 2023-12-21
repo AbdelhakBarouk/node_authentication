@@ -29,13 +29,27 @@ const login = async (req, res) => {
   if (!email || !password) {
     throw new CustomError.BadRequestError("please provide all values");
   }
-  const user = await User.findOne({ email: email });
-  const isPasswordValid = await user.isPasswordValid(password);
-
-  if (!isPasswordValid || !user) {
-    throw new CustomError.BadRequestError("email or password not correctil");
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new CustomError.UnAuthenticatedError("invalide cridentials");
   }
+  const isPasswordCorrect = await user.comparePassword(password);
+  if (!isPasswordCorrect) {
+    throw new CustomError.UnAuthenticatedError("invalide cridentials");
+  }
+
+  //jwt part
+  const payload = CreateUserToken(user);
+  attachCookiesToResponse({ res, user: payload });
+
+  res.status(StatusCodes.OK).json({ user });
 };
-const logout = async (req, res) => {};
+const logout = async (req, res) => {
+  res.cookie("token", "logout", {
+    httpOnly: true,
+    expire: new Date(Date.now()),
+  });
+  res.status(StatusCodes.OK).json({ msg: "user logeed out" });
+};
 
 module.exports = { register, login, logout };

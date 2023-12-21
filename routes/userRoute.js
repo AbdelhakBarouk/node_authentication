@@ -9,10 +9,17 @@ const {
   deleteUser,
 } = require("../controllers/userController");
 
-UserRouter.route("/").get(getAllUsers).post(createUser);
+const {
+  authenticateUser,
+  autherizePermissions,
+} = require("../middelwares/authentication");
+
+UserRouter.route("/")
+  .get(authenticateUser, getAllUsers)
+  .post(authenticateUser, createUser);
 UserRouter.route("/:id")
-  .get(getSingleUser)
-  .patch(updateUser)
-  .delete(deleteUser);
+  .get(authenticateUser, getSingleUser)
+  .patch(authenticateUser, updateUser)
+  .delete(authenticateUser, autherizePermissions("admin"), deleteUser);
 
 module.exports = UserRouter;
