@@ -14,8 +14,17 @@ const {
   autherizePermissions,
 } = require("../middelwares/authentication");
 
-UserRouter.route("/").get(authenticateUser, getAllUsers);
+UserRouter.route("/").get(
+  authenticateUser,
+  autherizePermissions("admin"),
+  getAllUsers
+);
 UserRouter.route("/showMe").get(authenticateUser, showCurrentUser);
+UserRouter.route("/updateUser").patch(authenticateUser, updateUser);
+UserRouter.route("/updateUserPassword").patch(
+  authenticateUser,
+  updateUserPassword
+);
 UserRouter.route("/:id").get(authenticateUser, getSingleUser);
 
 module.exports = UserRouter;
