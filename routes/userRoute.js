@@ -3,10 +3,10 @@ const UserRouter = express.Router();
 
 const {
   getAllUsers,
-  createUser,
+  showCurrentUser,
   getSingleUser,
   updateUser,
-  deleteUser,
+  updateUserPassword,
 } = require("../controllers/userController");
 
 const {
@@ -14,12 +14,8 @@ const {
   autherizePermissions,
 } = require("../middelwares/authentication");
 
-UserRouter.route("/")
-  .get(authenticateUser, getAllUsers)
-  .post(authenticateUser, createUser);
-UserRouter.route("/:id")
-  .get(authenticateUser, getSingleUser)
-  .patch(authenticateUser, updateUser)
-  .delete(authenticateUser, autherizePermissions("admin"), deleteUser);
+UserRouter.route("/").get(authenticateUser, getAllUsers);
+UserRouter.route("/showMe").get(authenticateUser, showCurrentUser);
+UserRouter.route("/:id").get(authenticateUser, getSingleUser);
 
 module.exports = UserRouter;

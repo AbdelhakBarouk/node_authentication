@@ -1,27 +1,29 @@
 const User = require("../models/user");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
+const { checkPermision } = require("../utils");
 
 const getAllUsers = async (req, res) => {
-  const users = await User.find({});
+  const users = await User.find({ role: "user" }).select("-password");
   res.status(StatusCodes.OK).json({ count: users.length, users: users });
 };
-const createUser = async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) {
-    throw new CustomError.BadRequestError("please provide all needed fields");
-  }
-  const user = await User.create({ name, email, password });
-  res.status(StatusCodes.OK).json({ user });
-};
+
 const getSingleUser = async (req, res) => {
   const userId = req.params.id;
-  const user = await User.findOne({ _id: userId });
+  const user = await User.findOne({ _id: userId }).select("-password");
   if (!user) {
     throw new CustomError.BadRequestError(`no user with the id : ${userId}`);
   }
-  res.status(StatusCodes.OK).json(user);
+  //check for the permission
+  checkPermision(req.user, user._id);
+  res.status(StatusCodes.OK).json({ user });
 };
+
+const showCurrentUser = async (req, res) => {
+  console.log(req.user);
+  res.status(StatusCodes.OK).json({ user: req.user });
+};
+
 const updateUser = async (req, res) => {
   const { email, name } = req.body;
   if (!name || !email) {
@@ -36,7 +38,7 @@ const updateUser = async (req, res) => {
   await user.save();
   res.status(StatusCodes.OK).json(user);
 };
-const deleteUser = async (req, res) => {
+const updateUserPassword = async (req, res) => {
   const userId = req.params.id;
   const user = await User.findOneAndDelete({ _id: userId });
   if (!user) {
@@ -47,8 +49,8 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
   getAllUsers,
-  createUser,
+  showCurrentUser,
   getSingleUser,
   updateUser,
-  deleteUser,
+  updateUserPassword,
 };
